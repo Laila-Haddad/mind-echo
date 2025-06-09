@@ -1,0 +1,85 @@
+{
+  "app": {
+    "name": "MindEcho",
+    "description": "EEG-based assistive communication technology"
+  },
+  "modes": {
+    "manual": {
+      "title": "Manual Recording Mode",
+      "description": "Focus on the letters you want to communicate and wait for the system to process your thoughts"
+    },
+    "eeg": {
+      "title": "EEG-Driven Mode"
+    }
+  },
+  "instructions": {
+    "title": "How to Use",
+    "alternative": "Or Use Another Option",
+    "manual": {
+      "title": "Manual Recording Mode",
+      "steps": {
+        "1": "Click \"Start Recording\" when ready",
+        "2": "Focus on the letters you want to communicate",
+        "3": "Click \"Stop Recording\" when finished",
+        "4": "Wait for the system to process your thoughts",
+        "5": "Listen to or share the generated text"
+      }
+    },
+    "eeg": {
+      "title": "EEG-Driven Mode",
+      "steps": {
+        "1": "Click \"Train Start Symbol\" first",
+        "2": "Follow the training prompts (5 steps)",
+        "3": "Perform your trained symbol to start recording",
+        "4": "Think your message, then repeat the symbol to stop",
+        "5": "The system will automatically process the result"
+      }
+    }
+  },
+  "buttons": {
+    "start_recording": "Start Recording",
+    "stop_recording": "Stop Recording",
+    "processing": "Processing EEG Data...",
+    "get_ready": "Get Ready"
+  },
+  "training": {
+    "title": "Set Your Start Symbol",
+    "description": "You'll need to perform your unique start action for 10 seconds. This could be:",
+    "options": {
+      "1": "Imagine saying \"START\"",
+      "2": "Think of clenching your right fist",
+      "3": "Visualize raising your left hand",
+      "4": "Any consistent mental action"
+    },
+    "instruction": "The thinking session will last 10 seconds. Stay focused and consistent!",
+    "start_button": "Start Training",
+    "complete": {
+      "title": "Training Complete!",
+      "description": "Your start symbol has been trained. The system is now monitoring for your start symbol."
+    },
+    "active": {
+      "title": "EEG-Driven Mode Active",
+      "description": "Perform your trained start symbol to begin recording automatically."
+    },
+    "progress": {
+      "title": "Perform your start symbol now",
+      "countdown": "Keep focusing for {{count}} more seconds",
+      "processing": "Processing your training data..."
+    }
+  },
+  "recording": {
+    "get_ready": "Get ready to focus...",
+    "focus_instruction": "Focus on each letter for exactly 2 seconds",
+    "letters_recorded": "You have recorded {{count}} letters so far"
+  },
+  "status": {
+    "idle": "Ready",
+    "start_record": "Recording EEG",
+    "processing": "Processing Data",
+    "data_processed": "Complete",
+    "training": "Training Model",
+    "awaiting_symbol": "Awaiting Start Symbol",
+    "unknown": "Unknown",
+    "error": "Error"
+  }
+}

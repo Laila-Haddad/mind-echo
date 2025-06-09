@@ -1,15 +1,17 @@
 import React, { useEffect, useState } from 'react';
-import { Mic, MicOff, Brain, Speaker } from 'lucide-react';
+import { Mic, MicOff, Brain } from 'lucide-react';
 import { useApp } from '../contexts/AppContext';
 import { eegProcessor } from '../services/eegProcessor';
 import { eegClassifier } from '../services/classifier';
 import { llmService } from '../services/llmService';
-import { ttsService } from '../services/ttsService';
-import AccessibleButton from './AccessibleButton';
+import { useTranslation } from 'react-i18next';
 
 const MainFlowButton: React.FC = () => {
   const { state, startRecording, stopRecording, dispatch } = useApp();
+  const { t } = useTranslation();
   const [countdown, setCountdown] = useState(0);
+  const [letterCountdown, setLetterCountdown] = useState(0);
+  const [currentLetter, setCurrentLetter] = useState(1);
 
   useEffect(() => {
     let countdownInterval: NodeJS.Timeout;
@@ -18,6 +20,9 @@ const MainFlowButton: React.FC = () => {
       countdownInterval = setInterval(() => {
         setCountdown(prev => {
           if (prev <= 1) {
+            // Start letter-by-letter countdown
+            setLetterCountdown(2);
+            setCurrentLetter(1);
             return 0;
           }
           return prev - 1;
@@ -33,8 +38,32 @@ const MainFlowButton: React.FC = () => {
   }, [state.isRecording, countdown]);
 
   useEffect(() => {
+    let letterInterval: NodeJS.Timeout;
+    
+    if (state.isRecording && countdown === 0 && letterCountdown > 0) {
+      letterInterval = setInterval(() => {
+        setLetterCountdown(prev => {
+          if (prev <= 1) {
+              setCurrentLetter(curr => curr + 1);
+              return 2; // Reset to 2 seconds for next letter
+          }
+          return prev - 1;
+        });
+      }, 1000);
+    }
+
+    return () => {
+      if (letterInterval) {
+        clearInterval(letterInterval);
+      }
+    };
+  }, [state.isRecording, countdown, letterCountdown, currentLetter, stopRecording]);
+
+  useEffect(() => {
     if (state.status === 'start_record') {
       setCountdown(2);
+      setLetterCountdown(0);
+      setCurrentLetter(1);
       eegProcessor.startCollection();
     }
   }, [state.status]);
@@ -87,6 +116,8 @@ const MainFlowButton: React.FC = () => {
   const handleButtonClick = () => {
     if (state.isRecording) {
       stopRecording();
+      setLetterCountdown(0);
+      setCurrentLetter(1);
     } else {
       startRecording();
       dispatch({ type: 'SET_ERROR', payload: null });
@@ -95,37 +126,50 @@ const MainFlowButton: React.FC = () => {
 
   const getButtonText = () => {
     if (state.status === 'processing') {
-      return 'Processing EEG Data...';
+      return t('buttons.processing');
     }
     if (state.isRecording) {
-      return countdown > 0 ? `Recording in ${countdown}s` : 'Stop Recording';
+      return countdown > 0 ? t('buttons.get_ready') : t('buttons.stop_recording');
     }
-    return 'Start Recording';
+    return t('buttons.start_recording');
   };
 
   const getButtonIcon = () => {
     if (state.status === 'processing') {
-      return <Brain className="w-8 h-8" />;
+      return <Brain className="w-12 h-12" />;
     }
-    return state.isRecording ? <MicOff className="w-8 h-8" /> : <Mic className="w-8 h-8" />;
+    return state.isRecording ? <MicOff className="w-12 h-12" /> : <Mic className="w-12 h-12" />;
   };
 
+  const isButtonDisabled = countdown > 0 || state.status === 'processing' || state.status === 'training';
+  const isAnimated = state.isRecording && countdown === 0 && letterCountdown > 0;
+
   return (
-    <div className="flex flex-col items-center space-y-6">
-      <AccessibleButton
+    <div className="flex flex-col items-center space-y-8">
+      <button
         onClick={handleButtonClick}
-        loading={state.status === 'processing'}
-        disabled={state.status === 'training'}
-        className="flex items-center space-x-4"
+        disabled={isButtonDisabled}
+        className={`
+          w-52 h-52 rounded-full 
+          bg-primary hover:bg-primary/90 
+          text-primary-foreground font-bold text-xl
+          shadow-lg border-4 border-primary-foreground/20
+          transition-all 
+          focus:outline-none focus:ring-8 focus:ring-primary/40
+          disabled:opacity-50 
+          flex flex-col items-center justify-center space-y-2
+          ${isAnimated ? 'animate-pulse' : ''}
+          ${!isButtonDisabled ? 'hover:scale-105 active:scale-95' : ''}
+        `}
         aria-label={getButtonText()}
       >
         {getButtonIcon()}
-        <span>{getButtonText()}</span>
-      </AccessibleButton>
+        <span className="text-center leading-tight">{getButtonText()}</span>
+      </button>
 
       {state.status === 'processing' && (
         <div className="w-full max-w-md">
-          <div className="bg-muted rounded-lg p-4">
+          <div className="bg-muted/20 rounded-lg p-4">
             <div className="flex justify-between text-sm text-muted-foreground mb-2">
               <span>Processing</span>
               <span>{state.progress}%</span>
@@ -142,10 +186,24 @@ const MainFlowButton: React.FC = () => {
 
       {countdown > 0 && state.isRecording && (
         <div className="text-center">
-          <div className="text-6xl font-bold text-primary animate-pulse">
+          <div className="text-8xl font-bold text-primary animate-pulse">
             {countdown}
           </div>
-          <p className="text-muted-foreground mt-2">Get ready to focus...</p>
+          <p className="text-muted-foreground mt-4 text-xl">{t('recording.get_ready')}</p>
+        </div>
+      )}
+
+      {letterCountdown > 0 && state.isRecording && countdown === 0 && (
+        <div className="text-center">
+          <div className="text-8xl font-bold text-secondary">
+            {letterCountdown}
+          </div>
+          <p className="text-foreground mt-4 text-2xl font-semibold">
+            {t('recording.focus_instruction')}
+          </p>
+          <p className="text-muted-foreground mt-2 text-lg">
+            {t('recording.letters_recorded', { count: currentLetter - 1 })}
+          </p>
         </div>
       )}
     </div>
