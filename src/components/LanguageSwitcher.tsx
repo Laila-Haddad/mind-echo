@@ -13,14 +13,14 @@ const LanguageSwitcher: React.FC = () => {
   };
 
   useEffect(() => {
-    toggleLanguage();
+    document.dir = i18n.language === 'ar' ? 'rtl' : 'ltr';
   }, [])
 
   return (
     <Button
       onClick={toggleLanguage}
       variant="outline"
-      className="fixed top-4 start-4 z-50 bg-muted border-border"
+      className="fixed top-4 start-4 z-50 bg-muted hover:bg-primary border-border"
     >
     <Globe className="w-9 h-9 text-secondary" />
       {i18n.language === 'en' ? 'العربية' : 'English'}

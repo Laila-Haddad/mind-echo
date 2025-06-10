@@ -9,7 +9,7 @@ class LLMService {
   private baseUrl: string = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${this.apiKey}`;
 
   async correctText(rawLetters: string): Promise<LLMResponse> {
-    const prompt = `Correct any errors and complete the following sequence of predicted EEG letters into a coherent Arabic sentence. letters will be mashed together into one string of letter. seperate them into correct arabic words and sentences. the letters may contain errors due to EEG signal noise. Return only the corrected sentence without explanations: "${rawLetters}"`;
+    const prompt = `this is a sequence of predicted EEG letters. seperate them into correct arabic words and sentences as you see fit. the letters may contain errors due to EEG signal noise so please correct them if it makes more sense for the meaning. Return only the corrected sentence without explanations. i must receive the same amount of letters that i sent: "${rawLetters}"`;
     try {
       const response = await fetch(this.baseUrl, {
         method: "POST",

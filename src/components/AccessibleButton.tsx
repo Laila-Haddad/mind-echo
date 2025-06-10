@@ -1,5 +1,6 @@
 import React from 'react';
 import { cn } from '@/lib/utils';
+import { useTranslation } from 'react-i18next';
 
 interface AccessibleButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: 'primary' | 'secondary' | 'danger';
@@ -17,6 +18,7 @@ const AccessibleButton: React.FC<AccessibleButtonProps> = ({
   disabled,
   ...props
 }) => {
+  const { t } = useTranslation();
   const baseClasses = "font-semibold rounded-lg transition-all duration-200 focus:outline-none focus:ring-4 focus:ring-offset-2";
   
   const variantClasses = {
@@ -49,7 +51,7 @@ const AccessibleButton: React.FC<AccessibleButtonProps> = ({
       {loading ? (
         <div className="flex items-center justify-center space-x-2">
           <div className="w-5 h-5 border-2 border-current border-t-transparent rounded-full animate-spin" />
-          <span>Processing...</span>
+          <span>{t('status.processing-proccess')}</span>
         </div>
       ) : (
         children

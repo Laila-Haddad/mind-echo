@@ -51,7 +51,7 @@
       "3": "تصور رفع يدك اليسرى",
       "4": "أي فعل ذهني متناسق"
     },
-    "instruction": "ستستمر جلسة التفكير 10 ثوانٍ. ابق متركزاً ومتناسقاً!",
+    "instruction": "ستستمر جلسة التفكير 10 ثوانٍ. ابق مركزاً !",
     "start_button": "بدء التدريب",
     "complete": {
       "title": "اكتمل التدريب!",
@@ -76,10 +76,38 @@
     "idle": "جاهز",
     "start_record": "تسجيل EEG",
     "processing": "معالجة البيانات",
-    "data_processed": "مكتمل",
+    "processing-process": "جارٍ المعالجة...",
+    "data_processed": "تم",
     "training": "تدريب النموذج",
     "awaiting_symbol": "في انتظار رمز البدء",
     "unknown": "غير معروف",
-    "error": "خطأ"
+    "error": "خطأ",
+    "training-failed":"فشل إكمال التدريب. يُرجى المحاولة مرة أخرى."
+
+  },
+  "display_area": {
+    "generated_text": "النص المُنشأ",
+    "read_aloud": "قراءة بصوت عالٍ",
+    "stop_reading": "إيقاف",
+    "copy_text": "نسخ النص",
+    "share": "مشاركة",
+    "new_recording": "تسجيل جديد",
+    "errors": {
+      "tts_not_supported": "خاصية تحويل النص إلى كلام غير مدعومة في هذا المتصفح.",
+      "tts_failed": "فشلت قراءة النص بصوت عالٍ. يرجى المحاولة مرة أخرى.",
+      "copy_failed": "فشل نسخ النص. يرجى المحاولة مرة أخرى."
+    },
+    "success": {
+      "text_read": "تمت قراءة النص بصوت عالٍ.",
+      "text_copied": "تم نسخ النص إلى الحافظة."
+    },
+    "aria": {
+      "generated_text": "النص المُنشأ من إشارات EEG",
+      "read_button": "قراءة النص بصوت عالٍ",
+      "stop_button": "إيقاف القراءة",
+      "copy_button": "نسخ النص إلى الحافظة",
+      "share_button": "مشاركة النص",
+      "new_recording_button": "بدء تسجيل جديد"
+    }
   }
 }

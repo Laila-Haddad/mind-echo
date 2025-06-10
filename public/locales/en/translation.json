@@ -76,10 +76,37 @@
     "idle": "Ready",
     "start_record": "Recording EEG",
     "processing": "Processing Data",
+    "processing-process": "Processing...",
     "data_processed": "Complete",
     "training": "Training Model",
     "awaiting_symbol": "Awaiting Start Symbol",
     "unknown": "Unknown",
-    "error": "Error"
+    "error": "Error",
+    "training-failed":"Failed to complete training. Please try again."
+  },
+  "display_area": {
+    "generated_text": "Generated Text",
+    "read_aloud": "Read Aloud",
+    "stop_reading": "Stop",
+    "copy_text": "Copy Text",
+    "share": "Share",
+    "new_recording": "New Recording",
+    "errors": {
+      "tts_not_supported": "Text-to-speech is not supported in this browser.",
+      "tts_failed": "Failed to read text aloud. Please try again.",
+      "copy_failed": "Failed to copy text. Please try again."
+    },
+    "success": {
+      "text_read": "Text has been read aloud.",
+      "text_copied": "Text copied to clipboard."
+    },
+    "aria": {
+      "generated_text": "Generated text from EEG signals",
+      "read_button": "Read text aloud",
+      "stop_button": "Stop reading",
+      "copy_button": "Copy text to clipboard",
+      "share_button": "Share text",
+      "new_recording_button": "Start new recording"
+    }
   }
 }

@@ -6,6 +6,7 @@ import { eegClassifier } from '../services/eegClassifier';
 import AccessibleButton from './AccessibleButton';
 import { Card } from './ui/card';
 import { useTranslation } from 'react-i18next';
+import { useToast } from '@/hooks/use-toast';
 
 const TrainingButton: React.FC = () => {
   const { state, startTraining, dispatch } = useApp();
@@ -13,7 +14,8 @@ const TrainingButton: React.FC = () => {
   const [trainingStep, setTrainingStep] = useState(0); // Renamed to indicate overall training state
   const [stepCountdown, setStepCountdown] = useState(0);
   const [trainingData, setTrainingData] = useState<any[]>([]);
-  // const totalSteps = 5; // Commented out: No longer needed for single step
+  const { toast } = useToast();
+
 
   const handleStartTraining = async () => {
     startTraining();
@@ -58,7 +60,11 @@ const TrainingButton: React.FC = () => {
 
     } catch (error) {
       console.error('Training step error:', error);
-      dispatch({ type: 'SET_ERROR', payload: 'Training failed. Please try again.' });
+      toast({
+        title: t('status.error'),
+        description: t('status.training-failed'),
+        variant: "destructive",
+      });
       dispatch({ type: 'SET_STATUS', payload: 'idle' });
       dispatch({ type: 'SET_TRAINING', payload: false });
       setTrainingStep(0);
@@ -67,9 +73,7 @@ const TrainingButton: React.FC = () => {
 
   const completeTraining = async (finalTrainingData: any[]) => {
     try {
-      console.log('Completing start symbol training...');
 
-      // Train the start symbol model
       await eegClassifier.trainStartSymbol(finalTrainingData);
 
       // Update state
@@ -77,12 +81,17 @@ const TrainingButton: React.FC = () => {
       dispatch({ type: 'SET_TRAINING', payload: false });
       dispatch({ type: 'SET_EEG_DRIVEN', payload: true });
 
-      setTrainingStep(0); // Reset training step to initial state
+      setTrainingStep(0);
 
       console.log('Training completed successfully');
     } catch (error) {
-      console.error('Training completion error:', error);
-      dispatch({ type: 'SET_ERROR', payload: 'Failed to complete training. Please try again.' });
+
+      toast({
+        title: t('status.error'),
+        description: t('status.training-failed') ,
+        variant: "destructive",
+      });
+
       dispatch({ type: 'SET_STATUS', payload: 'idle' });
       dispatch({ type: 'SET_TRAINING', payload: false });
       setTrainingStep(0);
@@ -124,10 +133,10 @@ const TrainingButton: React.FC = () => {
           onClick={handleStartTraining}
           variant="secondary"
           size="large"
-          className="flex items-center space-x-3 w-fit"
+          className="flex items-center space-x-3 w-fit gap-2"
         >
           <Play className="w-6 h-6" />
-          <span>{t('training.start_button')}</span>
+          <span className='!m-0'>{t('training.start_button')}</span>
         </AccessibleButton>
       </Card>
     );
