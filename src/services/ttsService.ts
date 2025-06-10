@@ -31,7 +31,6 @@ class TTSService {
 
   private loadVoices(): void {
     this.voices = this.synthesis.getVoices();
-    console.log(`Loaded ${this.voices.length} TTS voices`);
   }
 
   getAvailableVoices(): SpeechSynthesisVoice[] {
@@ -75,7 +74,6 @@ class TTSService {
 
       // Set event handlers
       utterance.onend = () => {
-        console.log('Speech synthesis completed');
         resolve();
       };
 
@@ -84,9 +82,7 @@ class TTSService {
         reject(new Error(`Speech synthesis failed: ${event.error}`));
       };
 
-      utterance.onstart = () => {
-        console.log('Speech synthesis started');
-      };
+      utterance.onstart = () => {};
 
       // Speak the text
       this.synthesis.speak(utterance);

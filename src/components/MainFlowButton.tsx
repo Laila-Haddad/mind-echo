@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Mic, MicOff, Brain } from 'lucide-react';
 import { useApp } from '../contexts/AppContext';
 import { eegProcessor } from '../services/eegProcessor';
-import { eegClassifier } from '../services/classifier';
+import { eegClassifier } from '../services/eegClassifier';
 import { llmService } from '../services/llmService';
 import { useTranslation } from 'react-i18next';
 

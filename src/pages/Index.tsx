@@ -1,7 +1,7 @@
 import React, { useEffect } from "react";
 import { Brain } from "lucide-react";
 import { AppProvider } from "../contexts/AppContext";
-import { eegClassifier } from "../services/classifier";
+import { eegClassifier } from "../services/eegClassifier";
 import MainFlowButton from "../components/MainFlowButton";
 import TrainingButton from "../components/TrainingButton";
 import DisplayArea from "../components/DisplayArea";
@@ -16,8 +16,8 @@ const IndexContent: React.FC = () => {
   useEffect(() => {
     const initializeApp = async () => {
       try {
-        // await eegClassifier.loadModel();
-        await eegClassifier.loadStartSymbolModel();
+        await eegClassifier.loadModel();
+        // await eegClassifier.loadStartSymbolModel();
       } catch (error) {
         console.error("Error initializing app:", error);
       }

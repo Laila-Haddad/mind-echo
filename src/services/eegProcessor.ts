@@ -1,8 +1,7 @@
-// EEG Data Processing Service
 export interface EEGSample {
   timestamp: number;
-  channels: number[]; // Multiple EEG channels
-  quality: number; // Signal quality indicator
+  channels: number[];
+  quality: number; 
 }
 
 export interface EEGSegment {
@@ -14,14 +13,13 @@ export interface EEGSegment {
 class EEGProcessor {
   private isCollecting = false;
   private collectedData: EEGSample[] = [];
-  private sampleRate = 128; // 128 samples per second
+  private sampleRate = 128;
   private intervalId: NodeJS.Timeout | null = null;
 
-  // Simulate EEG data - replace with actual EEG device integration
   private simulateEEGSample(): EEGSample {
     return {
       timestamp: Date.now(),
-      channels: Array.from({ length: 8 }, () => Math.random() * 100 - 50), // 8 channels
+      channels: Array.from({ length: 14 }, () => Math.random() * 100 - 50),
       quality: Math.random() * 100,
     };
   }

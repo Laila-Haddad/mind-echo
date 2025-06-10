@@ -11,43 +11,16 @@ class EEGClassifier {
   private model: tf.LayersModel | null = null;
   private startSymbolModel: tf.LayersModel | null = null;
   private isModelLoaded = false;
-  private alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');
+  private alphabet = 'ءأبثةتثجحخدذرزسشصضطظرعغفقكلمنهوى'.split('');
 
   async loadModel(modelUrl: string = '/models/eeg-classifier.json'): Promise<void> {
     try {
-      console.log('Loading TensorFlow.js model...');
       this.model = await tf.loadLayersModel(modelUrl);
       this.isModelLoaded = true;
       console.log('Model loaded successfully');
     } catch (error) {
       console.error('Error loading model:', error);
-      // For development, create a simple mock model
-      await this.createMockModel();
     }
-  }
-
-  private async createMockModel(): Promise<void> {
-    console.log('Creating mock model for development...');
-    
-    // Create a simple model for demonstration
-    const model = tf.sequential({
-      layers: [
-        tf.layers.dense({ inputShape: [32, 8], units: 64, activation: 'relu' }),
-        tf.layers.flatten(),
-        tf.layers.dense({ units: 32, activation: 'relu' }),
-        tf.layers.dense({ units: this.alphabet.length, activation: 'softmax' })
-      ]
-    });
-
-    model.compile({
-      optimizer: 'adam',
-      loss: 'categoricalCrossentropy',
-      metrics: ['accuracy']
-    });
-
-    this.model = model;
-    this.isModelLoaded = true;
-    console.log('Mock model created');
   }
 
   async classifySegment(segment: EEGSegment): Promise<ClassificationResult> {
@@ -67,7 +40,6 @@ class EEGClassifier {
       const character = this.alphabet[maxIndex];
       const confidence = probabilities[maxIndex];
 
-      // Clean up tensors
       inputTensor.dispose();
       prediction.dispose();
 
@@ -120,7 +92,6 @@ class EEGClassifier {
       const mostLikelyCharacter = this.aggregateSegmentPredictions(subSegmentResults);
       characterSequence.push(mostLikelyCharacter);
     }
-    
     return characterSequence.join('');
   }
 

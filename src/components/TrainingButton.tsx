@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { GraduationCap, CheckCircle, Play } from 'lucide-react';
 import { useApp } from '../contexts/AppContext';
 import { eegProcessor } from '../services/eegProcessor';
-import { eegClassifier } from '../services/classifier';
+import { eegClassifier } from '../services/eegClassifier';
 import AccessibleButton from './AccessibleButton';
 import { Card } from './ui/card';
 import { useTranslation } from 'react-i18next';
