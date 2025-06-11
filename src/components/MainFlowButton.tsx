@@ -5,6 +5,7 @@ import { eegProcessor } from '../services/eegProcessor';
 import { eegClassifier } from '../services/eegClassifier';
 import { llmService } from '../services/llmService';
 import { useTranslation } from 'react-i18next';
+import { useToast } from '@/hooks/use-toast';
 
 const MainFlowButton: React.FC = () => {
   const { state, startRecording, stopRecording, dispatch } = useApp();
@@ -12,6 +13,7 @@ const MainFlowButton: React.FC = () => {
   const [countdown, setCountdown] = useState(0);
   const [letterCountdown, setLetterCountdown] = useState(0);
   const [currentLetter, setCurrentLetter] = useState(1);
+  const { toast } = useToast();
 
   useEffect(() => {
     let countdownInterval: NodeJS.Timeout;
@@ -20,7 +22,6 @@ const MainFlowButton: React.FC = () => {
       countdownInterval = setInterval(() => {
         setCountdown(prev => {
           if (prev <= 1) {
-            // Start letter-by-letter countdown
             setLetterCountdown(2);
             setCurrentLetter(1);
             return 0;
@@ -108,7 +109,12 @@ const MainFlowButton: React.FC = () => {
       
     } catch (error) {
       console.error('Error processing EEG data:', error);
-      dispatch({ type: 'SET_ERROR', payload: 'Failed to process EEG data. Please try again.' });
+      toast({
+        title: t('status.error'),
+        description: t('status.training-failed') ,
+        variant: "destructive",
+      });
+
       dispatch({ type: 'SET_STATUS', payload: 'idle' });
     }
   };

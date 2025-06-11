@@ -8,17 +8,14 @@ i18n
   .use(LanguageDetector)
   .use(initReactI18next)
   .init({
-    debug: true,
     lng: 'ar',
     fallbackLng: 'ar',
     interpolation: {
-      escapeValue: false, // not needed for react
+      escapeValue: false,
     },
     backend: {
-      loadPath: '/locales/{{lng}}/{{ns}}.json', // default
+      loadPath: '/locales/{{lng}}/{{ns}}.json',
     },
-    // Remove "resources" here!
-    // Don't add resources when using backend loader
   });
 
 export default i18n;
