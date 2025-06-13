@@ -11,25 +11,26 @@ import { useToast } from '@/hooks/use-toast';
 const TrainingButton: React.FC = () => {
   const { state, startTraining, dispatch } = useApp();
   const { t } = useTranslation();
-  const [trainingStep, setTrainingStep] = useState(0); // Renamed to indicate overall training state
+  const [trainingStep, setTrainingStep] = useState(0);
   const [stepCountdown, setStepCountdown] = useState(0);
   const [trainingData, setTrainingData] = useState<any[]>([]);
   const { toast } = useToast();
 
 
   const handleStartTraining = async () => {
-    startTraining();
-    setTrainingStep(1); // Indicate training has started (step 1 of 1)
-    setTrainingData([]);
-    await performTrainingStep(); // Call without step parameter
+    // startTraining();
+    // setTrainingStep(1); // Indicate training has started (step 1 of 1)
+    // setTrainingData([]);
+    toast({
+      description: t('status.future') ,
+    });
+    // await performTrainingStep(); // Call without step parameter
   };
 
-  // Modified to handle a single training step
   const performTrainingStep = async () => {
     try {
       console.log(`Starting single training step`);
 
-      // Start 10-second countdown
       setStepCountdown(10);
       const countdownInterval = setInterval(() => {
         setStepCountdown(prev => {
@@ -41,21 +42,16 @@ const TrainingButton: React.FC = () => {
         });
       }, 1000);
 
-      // Start EEG collection for this training sample
       eegProcessor.startCollection();
 
-      // Wait for 10 seconds
       await new Promise(resolve => setTimeout(resolve, 10000));
 
-      // Stop collection and get data
       const rawData = eegProcessor.stopCollection();
       const segmentData = eegProcessor.processRecording(rawData);
 
-      // Store training data (only one segment expected for single step)
       const singleTrainingData = [segmentData.segments[0]];
       setTrainingData(singleTrainingData);
 
-      // Complete training after the single step
       await completeTraining(singleTrainingData);
 
     } catch (error) {

@@ -1,122 +1,138 @@
-// Text-to-Speech Service using Web Speech API
 export interface TTSOptions {
   rate?: number;
   pitch?: number;
   volume?: number;
-  voice?: string;
-  lang?: string;
+  voice?: string; 
+  lang?: string; 
 }
 
 class TTSService {
-  private synthesis: SpeechSynthesis;
-  private voices: SpeechSynthesisVoice[] = [];
-  private defaultOptions: TTSOptions = {
+  private audio: HTMLAudioElement | null = null;
+  private sourceObjectURL: string | null = null;
+  private is_playing = false;
+  private is_paused = false;
+  
+  private readonly apiKey = import.meta.env.VITE_TSS_API_KEY;
+  private readonly defaultVoiceId = 'EXAVITQu4vr4xnSDxMaL';
+  private readonly endpoint = 'https://api.elevenlabs.io/v1/text-to-speech/';
+  private readonly defaultOptions: TTSOptions = {
     rate: 0.8,
     pitch: 1,
     volume: 1,
-    lang: 'en-US',
+    lang: 'ar',
   };
 
-  constructor() {
-    this.synthesis = window.speechSynthesis;
-    this.loadVoices();
-    
-    // Handle voice loading
-    if (speechSynthesis.onvoiceschanged !== undefined) {
-      speechSynthesis.onvoiceschanged = () => {
-        this.loadVoices();
-      };
+  isSupported(): boolean {
+    return typeof window !== 'undefined' && !!window.Audio && !!window.fetch;
+  }
+
+  async speak(text: string, options: TTSOptions = {}): Promise<void> {
+    if (!text.trim()) throw new Error('No text to speak');
+    this.stop();
+
+    const opts = {...this.defaultOptions, ...options};
+    let voiceId = opts.voice || this.defaultVoiceId;
+    let modelId = 'eleven_multilingual_v2';
+
+    const body = {
+      text,
+      model_id: modelId,
+      voice_settings: {
+        stability: 0.4,
+        similarity_boost: 0.75
+      }
+    };
+
+    const response = await fetch(`${this.endpoint}${voiceId}`, {
+      method: 'POST',
+      headers: {
+        'xi-api-key': this.apiKey,
+        'Content-Type': 'application/json',
+        'Accept': 'audio/mpeg',
+      },
+      body: JSON.stringify(body)
+    });
+
+    if (!response.ok) {
+      throw new Error('Failed to synthesize speech via ElevenLabs: ' + response.statusText);
     }
-  }
+    const blob = await response.blob();
+    const audioUrl = URL.createObjectURL(blob);
 
-  private loadVoices(): void {
-    this.voices = this.synthesis.getVoices();
-  }
+    this.cleanupAudio(); 
+    this.audio = new Audio(audioUrl);
+    this.sourceObjectURL = audioUrl;
 
-  getAvailableVoices(): SpeechSynthesisVoice[] {
-    return this.voices.filter(voice => voice.lang.startsWith('en'));
-  }
+    if (typeof opts.volume === 'number') this.audio.volume = opts.volume;
 
-  speak(text: string, options: TTSOptions = {}): Promise<void> {
-    return new Promise((resolve, reject) => {
-      if (!text.trim()) {
-        reject(new Error('No text to speak'));
+    this.is_paused = false;
+    this.is_playing = true;
+
+    return new Promise<void>((resolve, reject) => {
+      if (!this.audio) {
+        reject(new Error('Audio element did not initialize properly'));
         return;
       }
-
-      // Stop any current speech
-      this.stop();
-
-      const utterance = new SpeechSynthesisUtterance(text);
-      const finalOptions = { ...this.defaultOptions, ...options };
-
-      // Set utterance properties
-      utterance.rate = finalOptions.rate || 0.8;
-      utterance.pitch = finalOptions.pitch || 1;
-      utterance.volume = finalOptions.volume || 1;
-      utterance.lang = finalOptions.lang || 'en-US';
-
-      // Find and set voice
-      if (finalOptions.voice) {
-        const selectedVoice = this.voices.find(voice => 
-          voice.name === finalOptions.voice || voice.voiceURI === finalOptions.voice
-        );
-        if (selectedVoice) {
-          utterance.voice = selectedVoice;
-        }
-      } else {
-        // Use first available English voice
-        const englishVoice = this.voices.find(voice => voice.lang.startsWith('en'));
-        if (englishVoice) {
-          utterance.voice = englishVoice;
-        }
-      }
-
-      // Set event handlers
-      utterance.onend = () => {
+      this.audio.onended = () => {
+        this.is_playing = false;
+        this.is_paused = false;
+        this.cleanupAudio();
         resolve();
       };
-
-      utterance.onerror = (event) => {
-        console.error('Speech synthesis error:', event.error);
-        reject(new Error(`Speech synthesis failed: ${event.error}`));
+      this.audio.onerror = e => {
+        this.is_playing = false;
+        this.cleanupAudio();
+        reject(new Error('Audio playback error'));
       };
-
-      utterance.onstart = () => {};
-
-      // Speak the text
-      this.synthesis.speak(utterance);
+      this.audio.play().catch(reject);
     });
   }
 
   stop(): void {
-    if (this.synthesis.speaking) {
-      this.synthesis.cancel();
+    if (this.audio) {
+      this.audio.pause();
+      this.audio.currentTime = 0;
+      this.is_playing = false;
+      this.is_paused = false;
+      this.cleanupAudio();
     }
   }
 
   pause(): void {
-    if (this.synthesis.speaking && !this.synthesis.paused) {
-      this.synthesis.pause();
+    if (this.audio && !this.audio.paused) {
+      this.audio.pause();
+      this.is_paused = true;
+      this.is_playing = false;
     }
   }
 
   resume(): void {
-    if (this.synthesis.paused) {
-      this.synthesis.resume();
+    if (this.audio && this.is_paused) {
+      this.audio.play();
+      this.is_paused = false;
+      this.is_playing = true;
     }
   }
 
   isSpeaking(): boolean {
-    return this.synthesis.speaking;
+    return !!this.audio && this.is_playing;
   }
 
   isPaused(): boolean {
-    return this.synthesis.paused;
+    return !!this.audio && this.is_paused;
   }
 
-  isSupported(): boolean {
-    return 'speechSynthesis' in window;
+  private cleanupAudio() {
+    if (this.audio) {
+      this.audio.onended = null;
+      this.audio.onerror = null;
+      this.audio.src = '';
+      this.audio = null;
+    }
+    if (this.sourceObjectURL) {
+      URL.revokeObjectURL(this.sourceObjectURL);
+      this.sourceObjectURL = null;
+    }
   }
 }
 

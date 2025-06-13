@@ -82,6 +82,7 @@
     "awaiting_symbol": "في انتظار رمز البدء",
     "unknown": "غير معروف",
     "error": "خطأ",
+    "future":"هذه الميزة ستتوفر قريباً.",
     "training-failed":"فشل إكمال التدريب. يُرجى المحاولة مرة أخرى."
 
   },
@@ -109,5 +110,22 @@
       "share_button": "مشاركة النص",
       "new_recording_button": "بدء تسجيل جديد"
     }
+  },
+  "eeg_connection": {
+    "title": "كيفية توصيل جهاز Emotiv EPOC+",
+    "step1": "١. تأكد من شحن جهاز Emotiv وتشغيله.",
+    "step2": "٢. ضع الجهاز واضبط الحساسات لضمان التلامس الجيد.",
+    "step3": "٣. افتح تطبيق Emotiv وقم بتوصيل الجهاز.",
+    "step4": "٤. اضغط الزر أدناه لتوصيل الجهاز بالتطبيق.",
+    "connect": "اتصال بجهاز EEG",
+    "connected": "تم الاتصال بالجهاز!",
+    "connect_btn_aria": "اتصال بجهاز EEG",
+    "toast_connecting_title": "جاري الاتصال...",
+    "toast_connecting_desc": "يتم الآن محاولة الاتصال بجهاز Emotiv EEG...",
+    "toast_connected_title": "تم الاتصال",
+    "toast_connected_desc": "تم الاتصال بجهاز EEG بنجاح!",
+    "toast_error_title": "فشل الاتصال",
+    "toast_error_desc": "تعذر الاتصال بجهاز EEG. يرجى التحقق من الاتصال وحاول مرة أخرى."
+ 
   }
 }

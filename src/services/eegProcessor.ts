@@ -1,3 +1,5 @@
+import { eegStream } from "./eegStream";
+
 export interface EEGSample {
   timestamp: number;
   channels: number[];
@@ -14,44 +16,42 @@ class EEGProcessor {
   private isCollecting = false;
   private collectedData: EEGSample[] = [];
   private sampleRate = 128;
-  private intervalId: NodeJS.Timeout | null = null;
 
-  private simulateEEGSample(): EEGSample {
-    return {
-      timestamp: Date.now(),
-      channels: Array.from({ length: 14 }, () => Math.random() * 100 - 50),
-      quality: Math.random() * 100,
-    };
-  }
+
+  
+  private sampleListener: ((sample: EEGSample) => void) | null = null; 
 
   startCollection(): void {
     console.log('Starting EEG data collection...');
     this.isCollecting = true;
     this.collectedData = [];
-    
-    // Collect at 128 Hz (every ~7.8ms)
-    this.intervalId = setInterval(() => {
-      if (this.isCollecting) {
-        const sample = this.simulateEEGSample();
-        this.collectedData.push(sample);
-      }
-    }, 1000 / this.sampleRate);
+  
+    if (this.sampleListener) {
+      eegStream.offSample(this.sampleListener);
+    }
+  
+    this.sampleListener = (sample: EEGSample) => {
+      if (this.isCollecting) this.collectedData.push(sample);
+    };
+    eegStream.onSample(this.sampleListener);
   }
-
+  
   stopCollection(): EEGSample[] {
-    console.log('Stopping EEG data collection...');
     this.isCollecting = false;
-    if (this.intervalId) {
-      clearInterval(this.intervalId);
-      this.intervalId = null;
+    if (this.sampleListener) {
+      eegStream.offSample(this.sampleListener);
+      this.sampleListener = null;
     }
     return [...this.collectedData];
   }
+  
+  clear(): void {
+    this.collectedData = [];
+  }
 
-  // Split recording into 2-second segments
   segmentIntoTwoSecond(data: EEGSample[]): EEGSegment[] {
     const segments: EEGSegment[] = [];
-    const samplesPerSegment = this.sampleRate * 2; // 256 samples per 2-second segment
+    const samplesPerSegment = this.sampleRate * 2; 
     
     for (let i = 0; i < data.length; i += samplesPerSegment) {
       const segmentSamples = data.slice(i, i + samplesPerSegment);
@@ -68,11 +68,10 @@ class EEGProcessor {
     return segments;
   }
 
-  // Split 2-second segments into 250ms overlapping sub-segments
   createOverlappingSubSegments(segment: EEGSegment): EEGSegment[] {
     const subSegments: EEGSegment[] = [];
-    const samplesPerSubSegment = Math.floor(this.sampleRate * 0.25); // 32 samples per 250ms
-    const slideWindow = 4; // 4 samples sliding window
+    const samplesPerSubSegment = Math.floor(this.sampleRate * 0.25); 
+    const slideWindow = 4;
     
     for (let i = 0; i <= segment.samples.length - samplesPerSubSegment; i += slideWindow) {
       const subSegmentSamples = segment.samples.slice(i, i + samplesPerSubSegment);
@@ -86,7 +85,6 @@ class EEGProcessor {
     return subSegments;
   }
 
-  // Process all segments and sub-segments
   processRecording(data: EEGSample[]): { segments: EEGSegment[], subSegments: EEGSegment[][] } {
     const twoSecondSegments = this.segmentIntoTwoSecond(data);
     const allSubSegments = twoSecondSegments.map(segment => 
@@ -100,7 +98,6 @@ class EEGProcessor {
     };
   }
 
-  // Convert EEG segment to tensor format for TensorFlow.js
   segmentToTensor(segment: EEGSegment): number[][] {
     return segment.samples.map(sample => sample.channels);
   }

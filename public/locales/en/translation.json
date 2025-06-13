@@ -82,6 +82,7 @@
     "awaiting_symbol": "Awaiting Start Symbol",
     "unknown": "Unknown",
     "error": "Error",
+    "future":"This feature is coming soon.",
     "training-failed":"Failed to complete training. Please try again."
   },
   "display_area": {
@@ -108,5 +109,22 @@
       "share_button": "Share text",
       "new_recording_button": "Start new recording"
     }
+  },
+  "eeg_connection": {
+    "title": "How to Connect Your Emotiv EPOC+ EEG Device",
+    "step1": "1. Ensure your Emotiv device is charged and powered on.",
+    "step2": "2. Put on the device and adjust the sensors for proper contact.",
+    "step3": "3. Start the Emotiv App and connect your headset.",
+    "step4": "4. Click below to connect the device to the application.",
+    "connect": "Connect to EEG Device",
+    "connected": "Device Connected!",
+    "connect_btn_aria": "Connect to EEG Device",
+    "toast_connecting_title": "Connecting...",
+    "toast_connecting_desc": "Attempting to connect to the Emotiv EEG device...",
+    "toast_connected_title": "Connected",
+    "toast_connected_desc": "The EEG device was successfully connected!",
+    "toast_error_title": "Connection Failed",
+    "toast_error_desc": "Could not connect to the EEG device. Please check the device connection and try again."
+  
   }
 }

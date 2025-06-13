@@ -46,7 +46,7 @@ const MainFlowButton: React.FC = () => {
         setLetterCountdown(prev => {
           if (prev <= 1) {
               setCurrentLetter(curr => curr + 1);
-              return 2; // Reset to 2 seconds for next letter
+              return 2; 
           }
           return prev - 1;
         });
@@ -65,7 +65,9 @@ const MainFlowButton: React.FC = () => {
       setCountdown(2);
       setLetterCountdown(0);
       setCurrentLetter(1);
-      eegProcessor.startCollection();
+      setTimeout(() => {
+        eegProcessor.startCollection();
+      }, 2000);
     }
   }, [state.status]);
 
@@ -79,30 +81,25 @@ const MainFlowButton: React.FC = () => {
     try {
       dispatch({ type: 'SET_PROGRESS', payload: 10 });
       
-      // Stop EEG collection and get data
       const rawData = eegProcessor.stopCollection();
       console.log(`Collected ${rawData.length} EEG samples`);
       
       dispatch({ type: 'SET_PROGRESS', payload: 30 });
       
-      // Process into segments
       const segmentData = eegProcessor.processRecording(rawData);
       
       dispatch({ type: 'SET_PROGRESS', payload: 50 });
       
-      // Classify segments to get character sequence
       const characterSequence = await eegClassifier.processAllSegments(segmentData);
       console.log('Classified character sequence:', characterSequence);
       
       dispatch({ type: 'SET_PROGRESS', payload: 70 });
       
-      // Send to LLM for correction
       const llmResponse = await llmService.correctText(characterSequence);
       console.log('LLM corrected text:', llmResponse.correctedText);
       
       dispatch({ type: 'SET_PROGRESS', payload: 90 });
       
-      // Update state with processed text
       dispatch({ type: 'SET_PROCESSED_TEXT', payload: llmResponse.correctedText });
       dispatch({ type: 'SET_STATUS', payload: 'data_processed' });
       dispatch({ type: 'SET_PROGRESS', payload: 100 });
