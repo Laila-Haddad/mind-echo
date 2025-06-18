@@ -4,6 +4,7 @@ export type AppStatus = 'idle' | 'start_record' | 'processing' | 'data_processed
 
 interface AppState {
   status: AppStatus;
+  extractedText: string;
   processedText: string;
   isRecording: boolean;
   isTraining: boolean;
@@ -16,6 +17,7 @@ interface AppState {
 
 type AppAction =
   | { type: 'SET_STATUS'; payload: AppStatus }
+  | { type: 'SET_EXTRACTED_TEXT'; payload: string }
   | { type: 'SET_PROCESSED_TEXT'; payload: string }
   | { type: 'SET_RECORDING'; payload: boolean }
   | { type: 'SET_TRAINING'; payload: boolean }
@@ -28,6 +30,7 @@ type AppAction =
 
 const initialState: AppState = {
   status: 'idle',
+  extractedText:'',
   processedText: '',
   isRecording: false,
   isTraining: false,
@@ -42,6 +45,8 @@ function appReducer(state: AppState, action: AppAction): AppState {
   switch (action.type) {
     case 'SET_STATUS':
       return { ...state, status: action.payload };
+    case 'SET_EXTRACTED_TEXT':
+      return { ...state, extractedText: action.payload };
     case 'SET_PROCESSED_TEXT':
       return { ...state, processedText: action.payload };
     case 'SET_RECORDING':

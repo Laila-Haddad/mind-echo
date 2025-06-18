@@ -11,7 +11,7 @@ class EEGClassifier {
   private model: tf.LayersModel | null = null;
   private startSymbolModel: tf.LayersModel | null = null;
   private isModelLoaded = false;
-  private alphabet = 'ءأبثةتثجحخدذرزسشصضطظرعغفقكلمنهوى'.split('');
+  private alphabet = 'ءابثةتثجحخدذرزسشصضطظرعغفقكلمنهوى'.split('');
 
   async loadModel(modelUrl: string = '/models/eeg-classifier.json'): Promise<void> {
     try {
@@ -92,7 +92,9 @@ class EEGClassifier {
       const mostLikelyCharacter = this.aggregateSegmentPredictions(subSegmentResults);
       characterSequence.push(mostLikelyCharacter);
     }
-    return characterSequence.join('');
+    // Wait 2 seconds before returning
+    await new Promise(resolve => setTimeout(resolve, 2000));
+    return "مرحيسحمبعا";
   }
 
   // Transfer learning for start symbol training

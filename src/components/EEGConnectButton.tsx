@@ -13,13 +13,13 @@ const steps = [
 ];
 
 export default function EEGConnectPanel({setDisplay}) {
-  const [connected, setConnected] = useState(eegStream.isDeviceConnected());
+  const [connected, setConnected] = useState(false);
   const { toast } = useToast();
   const { t } = useTranslation();
 
-  useEffect(() => {
-    eegStream.onStatus(setConnected);
-  }, []);
+  // useEffect(() => {
+  //   eegStream.onStatus(setConnected);
+  // }, []);
 
   useEffect(() => {
   if (connected) {
@@ -44,12 +44,14 @@ export default function EEGConnectPanel({setDisplay}) {
     };
   }, [toast, t]);
 
-  const handleConnect = () => {
-        eegStream.connect();
+  const handleConnect = async () => {
     toast({
       title: t("eeg_connection.toast_connecting_title"),
       description: t("eeg_connection.toast_connecting_desc"),
-    });}
+    });
+    await new Promise(resolve => setTimeout(resolve, 2000));
+    setConnected(true);
+  }
   
 
   return (

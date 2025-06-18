@@ -1,132 +1,148 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import { GraduationCap, CheckCircle, Play } from 'lucide-react';
 import { useApp } from '../contexts/AppContext';
-import { eegProcessor } from '../services/eegProcessor';
-import { eegClassifier } from '../services/eegClassifier';
 import AccessibleButton from './AccessibleButton';
 import { Card } from './ui/card';
 import { useTranslation } from 'react-i18next';
 import { useToast } from '@/hooks/use-toast';
 
+const TRAINING_TIME = 10; // 10 seconds per letter
+const REST_TIME = 10; // 10 seconds rest between letters
+const PROCESSING_TIME = 4000; // 4 seconds for processing simulation
+
 const TrainingButton: React.FC = () => {
-  const { state, startTraining, dispatch } = useApp();
+  const { state, dispatch } = useApp();
   const { t } = useTranslation();
-  const [trainingStep, setTrainingStep] = useState(0);
-  const [stepCountdown, setStepCountdown] = useState(0);
-  const [trainingData, setTrainingData] = useState<any[]>([]);
+  const [currentPhase, setCurrentPhase] = useState<'initial' | 'training' | 'rest' | 'processing' | 'complete'>('initial');
+  const [countdown, setCountdown] = useState(0);
+  const [currentLetter, setCurrentLetter] = useState('');
+  const [usedLetters, setUsedLetters] = useState<string[]>([]);
   const { toast } = useToast();
 
+  // Arabic alphabet array
+  const alphabet = 'ابتخشطرعقل'.split('');
 
-  const handleStartTraining = async () => {
-    // startTraining();
-    // setTrainingStep(1); // Indicate training has started (step 1 of 1)
-    // setTrainingData([]);
-    toast({
-      description: t('status.future') ,
-    });
-    // await performTrainingStep(); // Call without step parameter
-  };
+  const getRandomLetter = useCallback(() => {
+    const availableLetters = alphabet.filter(letter => !usedLetters.includes(letter));
+    if (availableLetters.length === 0) return null;
+    const randomIndex = Math.floor(Math.random() * availableLetters.length);
+    return availableLetters[randomIndex];
+  }, [usedLetters, alphabet]);
 
-  const performTrainingStep = async () => {
-    try {
-      console.log(`Starting single training step`);
+  const handlePhaseComplete = useCallback(() => {
+    if (currentPhase === 'training') {
+      // Check if this was the last letter
+      const availableLettersCount = alphabet.length - usedLetters.length;
+      if (availableLettersCount === 0) {
+        // No more letters, go straight to processing
+        setCurrentPhase('processing');
+        setTimeout(() => {
+          setCurrentPhase('complete');
+          dispatch({ type: 'SET_STATUS', payload: 'idle' });
+        }, PROCESSING_TIME);
+      } else {
+        // More letters available, proceed to rest phase
+        setCurrentPhase('rest');
+        setCountdown(REST_TIME);
+      }
+    } else if (currentPhase === 'rest') {
+      const nextLetter = getRandomLetter();
+      // At this point, nextLetter should technically always exist because the check
+      // for `availableLettersCount === 0` happens during the 'training' phase completion.
+      // However, it's good to keep the `if (nextLetter)` check for robustness.
+      if (nextLetter) {
+        // Continue with next letter
+        setCurrentPhase('training');
+        setCurrentLetter(nextLetter);
+        setUsedLetters(prev => [...prev, nextLetter]);
+        setCountdown(TRAINING_TIME);
+      } else {
+        // This 'else' block should theoretically not be hit if the logic above is correct,
+        // but as a fallback, it would mean all letters are complete.
+        setCurrentPhase('processing');
+        setTimeout(() => {
+          setCurrentPhase('complete');
+          dispatch({ type: 'SET_STATUS', payload: 'idle' });
+        }, PROCESSING_TIME);
+      }
+    }
+  }, [currentPhase, getRandomLetter, dispatch, alphabet.length, usedLetters.length]); // Added dependencies
 
-      setStepCountdown(10);
-      const countdownInterval = setInterval(() => {
-        setStepCountdown(prev => {
-          if (prev <= 1) {
-            clearInterval(countdownInterval);
-            return 0;
-          }
-          return prev - 1;
-        });
+  // useEffect to manage the countdown timer
+  useEffect(() => {
+    if (currentPhase === 'training' || currentPhase === 'rest') {
+      const timer = setInterval(() => {
+        setCountdown(prev => prev - 1);
       }, 1000);
 
-      eegProcessor.startCollection();
+      // Cleanup function for setInterval
+      return () => clearInterval(timer);
+    }
+  }, [currentPhase]);
 
-      await new Promise(resolve => setTimeout(resolve, 10000));
+  // useEffect to handle countdown reaching zero
+  useEffect(() => {
+    // Only call handlePhaseComplete if countdown is 0 or less
+    // and we are in a phase that has a countdown (training or rest)
+    if ((currentPhase === 'training' || currentPhase === 'rest') && countdown <= 0) {
+      handlePhaseComplete();
+    }
+  }, [countdown, currentPhase, handlePhaseComplete]);
 
-      const rawData = eegProcessor.stopCollection();
-      const segmentData = eegProcessor.processRecording(rawData);
-
-      const singleTrainingData = [segmentData.segments[0]];
-      setTrainingData(singleTrainingData);
-
-      await completeTraining(singleTrainingData);
-
-    } catch (error) {
-      console.error('Training step error:', error);
-      toast({
-        title: t('status.error'),
-        description: t('status.training-failed'),
-        variant: "destructive",
-      });
-      dispatch({ type: 'SET_STATUS', payload: 'idle' });
-      dispatch({ type: 'SET_TRAINING', payload: false });
-      setTrainingStep(0);
+  const startTraining = () => {
+    dispatch({ type: 'SET_STATUS', payload: 'training' });
+    const newLetter = getRandomLetter();
+    if (newLetter) {
+      setCurrentLetter(newLetter);
+      setUsedLetters(prev => [...prev, newLetter]);
+      setCurrentPhase('training'); // Set phase AFTER letter is chosen
+      setCountdown(TRAINING_TIME);
+    } else {
+        toast({
+            title: t('training.error.no_letters'),
+            description: t('training.error.no_letters_desc'),
+            variant: 'destructive',
+        });
+        resetTraining();
     }
   };
 
-  const completeTraining = async (finalTrainingData: any[]) => {
-    try {
-
-      await eegClassifier.trainStartSymbol(finalTrainingData);
-
-      // Update state
-      dispatch({ type: 'SET_STATUS', payload: 'awaiting_symbol' });
-      dispatch({ type: 'SET_TRAINING', payload: false });
-      dispatch({ type: 'SET_EEG_DRIVEN', payload: true });
-
-      setTrainingStep(0);
-
-      console.log('Training completed successfully');
-    } catch (error) {
-
-      toast({
-        title: t('status.error'),
-        description: t('status.training-failed') ,
-        variant: "destructive",
-      });
-
-      dispatch({ type: 'SET_STATUS', payload: 'idle' });
-      dispatch({ type: 'SET_TRAINING', payload: false });
-      setTrainingStep(0);
-    }
+  const resetTraining = () => {
+    setCurrentPhase('initial');
+    setUsedLetters([]);
+    setCurrentLetter('');
+    setCountdown(0);
+    dispatch({ type: 'SET_STATUS', payload: 'idle' });
   };
 
-  if (state.status === 'awaiting_symbol') {
+  if (currentPhase === 'complete') {
     return (
       <div className="text-center space-y-4">
-        <div className="bg-accent/20 border border-accent rounded-lg p-6 max-w-md mx-auto">
-          <CheckCircle className="w-12 h-12 text-accent mx-auto mb-4" />
+        <div className="bg-accent/20 border border-accent rounded-lg p-6 max-w-md mx-auto flex flex-col gap-4 items-center">
+          <CheckCircle className="w-12 h-12 text-primary mx-auto mb-4" />
           <h3 className="text-lg font-semibold text-foreground">{t('training.complete.title')}</h3>
           <p className="text-muted-foreground">{t('training.complete.description')}</p>
-        </div>
-
-        <div className="bg-primary/20 border border-primary rounded-lg p-4 max-w-md mx-auto">
-          <div className="text-lg font-semibold text-foreground mb-2">
-            {t('training.active.title')}
-          </div>
-          <p className="text-muted-foreground">{t('training.active.description')}</p>
+          <AccessibleButton
+            onClick={resetTraining}
+            variant="secondary"
+            size="large"
+            className="mt-4"
+          >
+            {t('display_area.new_recording')}
+          </AccessibleButton>
         </div>
       </div>
     );
   }
 
-  if (state.status !== 'training') {
+  if (currentPhase === 'initial') {
     return (
-      <Card className="text-center space-y-6 mx-9 p-4 gap-0 bg-muted flex flex-col justify-center items-center">
+      <Card className="text-center space-y-8 mx-9 p-8 gap-0 bg-muted flex flex-col justify-center items-center">
         <h3 className="text-xl font-semibold text-foreground">{t('training.title')}</h3>
-        <p className="text-muted-foreground">{t('training.description')}</p>
-        <ul className="text-md text-muted-foreground list-none list-inside space-y-1">
-          <li>{t('training.options.1')}</li>
-          <li>{t('training.options.2')}</li>
-          <li>{t('training.options.3')}</li>
-          <li>{t('training.options.4')}</li>
-        </ul>
-        <p className="text-foreground font-medium">{t('training.instruction')}</p>
+        <p className="text-foreground font-medium">{t('training.description')}</p>
+        <p className="text-muted-foreground ">{t('training.instruction')}</p>
         <AccessibleButton
-          onClick={handleStartTraining}
+          onClick={startTraining}
           variant="secondary"
           size="large"
           className="flex items-center space-x-3 w-fit gap-2"
@@ -138,41 +154,55 @@ const TrainingButton: React.FC = () => {
     );
   }
 
-  if (state.status === 'training') {
+  if (currentPhase === 'processing') {
     return (
       <div className="text-center space-y-6">
         <div className="bg-primary/20 rounded-lg p-8 max-w-md mx-auto">
-          <div className="text-3xl font-bold text-primary mb-4">
-            {t('training.progress.title')}
+          <div className="text-lg text-foreground">
+            {t('training.progress.processing')}
           </div>
-
-          {stepCountdown > 0 ? (
-            <>
-              <div className="text-6xl font-bold text-secondary mb-4">
-                {stepCountdown}
-              </div>
-              <p className="text-secondary mt-2">
-                {t('training.progress.countdown', { count: stepCountdown })}
-              </p>
-            </>
-          ) : (
-            <div className="text-lg text-foreground">
-              {t('training.progress.processing')}
-            </div>
-          )}
-
           <div className="mt-6 w-full bg-background rounded-full h-3">
-            <div
-              className="bg-primary h-3 rounded-full transition-all duration-300"
-              style={{ width: stepCountdown === 0 ? '100%' : '0%' }}
-            />
+            <div className="bg-primary h-3 rounded-full transition-all duration-300 animate-pulse" />
           </div>
         </div>
       </div>
     );
   }
 
-  return null;
+  return (
+    <div className="text-center space-y-6">
+      <div className="bg-primary/20 rounded-lg p-8 max-w-md mx-auto">
+        {currentPhase === 'training' ? (
+          <>
+            <div className="text-6xl font-bold py-6 text-primary mb-4">
+              {currentLetter}
+            </div>
+            <p className="text-secondary mt-2">
+              {t('recording.focus_instruction_10')}
+            </p>
+          </>
+        ) : ( // currentPhase === 'rest'
+          <>
+            <div className="text-3xl font-bold  py-6 text-primary mb-4">
+              {t('recording.focus_instruction_rest')}
+            </div>
+            <p className="text-secondary mt-2">
+              {t('recording.get_ready_rest')}
+            </p>
+          </>
+        )}
+        <div className="text-6xl font-bold text-secondary my-4">
+          {countdown}
+        </div>
+        <div className="mt-6 w-full bg-background rounded-full h-3">
+          <div
+            className="bg-primary h-3 rounded-full transition-all duration-300"
+            style={{ width: `${(countdown / (currentPhase === 'training' ? TRAINING_TIME : REST_TIME)) * 100}%` }}
+          />
+        </div>
+      </div>
+    </div>
+  );
 };
 
 export default TrainingButton;

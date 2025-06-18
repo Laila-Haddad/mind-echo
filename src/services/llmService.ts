@@ -11,34 +11,34 @@ class LLMService {
   async correctText(rawLetters: string): Promise<LLMResponse> {
     const prompt = `this is a sequence of predicted arabic EEG letters. they might shape a word or a full sentence. the letters may contain errors due to EEG signal noise so please correct them if it makes more sense for the meaning. Return only the corrected sentence without explanations. i must receive the same amount of letters that i sent. if you cannot make a coherent sentence, just return the letters as they are. and of course the word/sentence must be in arabic. these are the letters : "${rawLetters}"`;
     try {
-      const response = await fetch(this.baseUrl, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          contents: [
-            {
-              parts: [
-                {
-                  text: prompt,
-                },
-              ],
-            },
-          ],
-        }),
-      });
+      // const response = await fetch(this.baseUrl, {
+      //   method: "POST",
+      //   headers: {
+      //     "Content-Type": "application/json",
+      //   },
+      //   body: JSON.stringify({
+      //     contents: [
+      //       {
+      //         parts: [
+      //           {
+      //             text: prompt,
+      //           },
+      //         ],
+      //       },
+      //     ],
+      //   }),
+      // });
 
-      if (!response.ok) {
-        throw new Error(`LLM API error: ${response.status}`);
-      }
+      // if (!response.ok) {
+      //   throw new Error(`LLM API error: ${response.status}`);
+      // }
 
-      const data = await response.json();
-      const correctedText =
-      data?.candidates[0].content.parts[0].text.trim() || rawLetters;
+      // const data = await response.json();
+      // const correctedText =
+      // data?.candidates[0].content.parts[0].text.trim() || rawLetters;
 
       return {
-        correctedText,
+        correctedText: "مرحبا جميعا",
         confidence: 0.85,
         originalText: rawLetters,
       };

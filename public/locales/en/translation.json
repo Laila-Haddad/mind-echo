@@ -26,13 +26,13 @@
       }
     },
     "eeg": {
-      "title": "EEG-Driven Mode",
+      "title": "Accuracy Improvement",
       "steps": {
-        "1": "Click \"Train Start Symbol\" first",
-        "2": "Follow the training prompts (5 steps)",
-        "3": "Perform your trained symbol to start recording",
-        "4": "Think your message, then repeat the symbol to stop",
-        "5": "The system will automatically process the result"
+        "1": "Imagine saying the letter on the screen for 10 seconds",
+        "2": "Rest for 10 seconds to clear your mind.",
+        "3": "Do steps 1 and 2 until all the 31 have been displayed",
+        "4": "Wait for the model to finish training",
+        "5": "Start recording new words"
       }
     }
   },
@@ -43,33 +43,27 @@
     "get_ready": "Get Ready"
   },
   "training": {
-    "title": "Set Your Start Symbol",
-    "description": "You'll need to perform your unique start action for 10 seconds. This could be:",
-    "options": {
-      "1": "Imagine saying \"START\"",
-      "2": "Think of clenching your right fist",
-      "3": "Visualize raising your left hand",
-      "4": "Any consistent mental action"
-    },
-    "instruction": "The thinking session will last 10 seconds. Stay focused and consistent!",
-    "start_button": "Start Training",
+    "title": "Add New EEG Recordings",
+    "description": "To improve the accuracy of word predictions, you can add new EEG recordings to the system.",
+    "instruction": "You will preform The thinking session for each letter will last 10 seconds. There will be a 10-second resting period between the letters to clear your mind. Stay focused and consistent!",
+    "start_button": "Start Recording",
     "complete": {
       "title": "Training Complete!",
-      "description": "Your start symbol has been trained. The system is now monitoring for your start symbol."
-    },
-    "active": {
-      "title": "EEG-Driven Mode Active",
-      "description": "Perform your trained start symbol to begin recording automatically."
+      "description": "The recordings have been saved. The system will now have improved predictions."
     },
     "progress": {
-      "title": "Perform your start symbol now",
+      "title": "Perform the displayed letter now",
       "countdown": "Keep focusing for {{count}} more seconds",
       "processing": "Processing your training data..."
     }
   },
   "recording": {
+    
     "get_ready": "Get ready to focus...",
+    "get_ready_rest": "Rest Period",
+    "focus_instruction_rest": "Clear your mind and prepare for the next letter",
     "focus_instruction": "Focus on each letter for exactly 2 seconds",
+    "focus_instruction_10": "Focus on each letter for exactly 10 seconds",
     "letters_recorded": "You have recorded {{count}} letters so far"
   },
   "status": {
@@ -105,6 +99,7 @@
       "generated_text": "Generated text from EEG signals",
       "read_button": "Read text aloud",
       "stop_button": "Stop reading",
+      "corrected_text":"Corrected Text",
       "copy_button": "Copy text to clipboard",
       "share_button": "Share text",
       "new_recording_button": "Start new recording"

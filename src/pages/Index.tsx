@@ -69,9 +69,7 @@ const IndexContent: React.FC = () => {
               </Card>
             </section>
             <DisplayArea />
-            <p className="text-center text-muted-foreground font-bold text-lg">
-              {t("instructions.alternative")}
-            </p>
+
             <section
               aria-label="Recording Controls"
               className="text-center space-y-8 mt-6"
