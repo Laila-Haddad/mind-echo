@@ -174,7 +174,7 @@ const TrainingButton: React.FC = () => {
       <div className="bg-primary/20 rounded-lg p-8 max-w-md mx-auto">
         {currentPhase === 'training' ? (
           <>
-            <div className="text-6xl font-bold py-6 text-primary mb-4">
+            <div className="text-6xl font-bold py-6 text-secondary mb-4">
               {currentLetter}
             </div>
             <p className="text-secondary mt-2">
@@ -183,7 +183,7 @@ const TrainingButton: React.FC = () => {
           </>
         ) : ( // currentPhase === 'rest'
           <>
-            <div className="text-3xl font-bold  py-6 text-primary mb-4">
+            <div className="text-3xl font-bold  py-6 text-secondary mb-4">
               {t('recording.focus_instruction_rest')}
             </div>
             <p className="text-secondary mt-2">
@@ -191,7 +191,7 @@ const TrainingButton: React.FC = () => {
             </p>
           </>
         )}
-        <div className="text-6xl font-bold text-secondary my-4">
+        <div className="text-6xl font-bold text-primary my-4">
           {countdown}
         </div>
         <div className="mt-6 w-full bg-background rounded-full h-3">
